@@ -2,14 +2,18 @@ struct Solution {}
 
 impl Solution {
     pub fn length_of_lis(nums: &Vec<i32>) -> i32 {
-        let diffs = nums.windows(2).for_each(|window| {
-            window
-                .iter()
-                .reduce(|diff, n| diff - n)
-                .expect("we always have two values")
-        });
+        let mut diffs = Vec::with_capacity(nums.len() - 1);
+        for i in 0..(nums.len() - 1) {
+            diffs.push(nums[i + 1] - nums[i]);
+        }
+        // let diffs = nums.windows(2).for_each(|window| {
+        //     window
+        //         .iter()
+        //         .reduce(|diff, n| diff - n)
+        //         .expect("we always have two values")
+        // });
         eprintln!("{:?}", diffs);
-        0
+        diffs.len() as i32
     }
 }
 
