@@ -1,3 +1,3 @@
 # 300
 
-See <https://leetcode.com/problems/longest-increasing-subsequence/>.
+See <https://leetcode.com/problems/longest-increasing-subsequence/>
