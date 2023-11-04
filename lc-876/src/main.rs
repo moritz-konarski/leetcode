@@ -15,17 +15,68 @@ impl ListNode {
 struct Solution {}
 
 impl Solution {
+    // removing the counter may reduce memory even further
+    // directly operating on the Option may also help
+    /// 0 ms and 1.99 MB
     pub fn middle_node(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+        // we know there is at least one node
+        let mut first_node = &head;
+        // for one node its its own middle
+        let mut middle_node = first_node;
+
+        // we take two steps with each loop iteration
+        while let Some(ListNode {
+            next: Some(next_node),
+            ..
+        }) = first_node.as_deref()
+        {
+            first_node = &next_node.next;
+            // this always works because the first node has already traversed this
+            middle_node = &middle_node.as_ref().unwrap().next;
+        }
+
+        middle_node.to_owned()
+    }
+
+    /// 0 ms and 2.01 MB
+    pub fn middle_node2(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
         let mut current = &head.expect("there is at least one node");
         let mut middle = current;
-        let mut counter = 1;
+        let mut node_counter = 1;
 
         while let Some(next) = &current.next {
-            if counter % 2 == 0 {
-                middle = &current;
-            }
             current = &next;
-            counter += 1;
+            node_counter += 1;
+
+            // by moving the middle pointer every two nodes we keep track of the middle
+            if node_counter % 2 == 0 {
+                // this always works because middle follows the current pointer
+                if let Some(next_middle) = &middle.next {
+                    middle = next_middle;
+                }
+            }
+        }
+
+        Some(middle.to_owned())
+    }
+    /// this beats the pants off other solutions
+    /// 0 ms and 2.13 MB
+    pub fn middle_node1(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+        let mut current = &head.expect("there is at least one node");
+        let mut middle = current;
+        let mut node_counter = 1;
+
+        while let Some(next) = &current.next {
+            current = &next;
+            node_counter += 1;
+
+            // by moving the middle pointer every two nodes we keep track of the middle
+            if node_counter % 2 == 0 {
+                // this always works because middle follows the current pointer
+                if let Some(next_middle) = &middle.next {
+                    middle = next_middle;
+                }
+            }
         }
 
         Some(middle.clone())
