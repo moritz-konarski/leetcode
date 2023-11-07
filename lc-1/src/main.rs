@@ -1,8 +1,29 @@
 use std::collections::HashMap;
 
 impl Solution {
-    /// this works but is slow: hashmaps seem to rule
+    /// this is the best I could do
+    /// 1 ms and 2.12 MB
     pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
+        if nums.len() <= 2 {
+            return vec![0, 1];
+        }
+
+        let mut num_to_index = HashMap::with_capacity(nums.len());
+
+        for (index, num) in nums.iter().enumerate() {
+            let needed = (target - num) as i16;
+
+            if num_to_index.contains_key(&needed) {
+                return vec![num_to_index[&needed] as i32, index as i32];
+            }
+
+            num_to_index.insert(*num as i16, index as i16);
+        }
+
+        Vec::new()
+    }
+    /// this works but is slow: hashmaps seem to rule
+    pub fn two_sum3(nums: Vec<i32>, target: i32) -> Vec<i32> {
         if nums.len() <= 2 {
             return vec![0, 1];
         }
