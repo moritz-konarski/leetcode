@@ -1,4 +1,6 @@
 impl Solution {
+    /// this is better, but it seems to pay to keep the match as small as possible
+    /// 3ms and 2.16 MB
     pub fn add_two_numbers(
         l1: Option<Box<ListNode>>,
         l2: Option<Box<ListNode>>,
@@ -19,45 +21,122 @@ impl Solution {
         let mut result_tail = &mut result_head;
 
         loop {
-            // at this point, the lists are always Some() so we can advance them like this
-            l1 = &l1.unwrap().next;
-            l2 = &l2.unwrap().next;
-
-            // TODO: remove the `if let Some(node)` using `match`
-
             // advance the lists conditionally
-            match (l1.as_deref(), l2.as_deref()) {
-                // both have next nodes
-                (Some(ListNode { next: Some(n1), .. }), Some(ListNode { next: Some(n2), .. })) => {
-                    l1 = &n1;
-                    l2 = &n2;
-                    num1 = n1.val;
-                    num2 = n2.val;
-                }
-                (Some(ListNode { next: Some(n1), .. }), Some(ListNode { next: None, .. })) => {
-                    num1 = n1.val;
-                    num2 = 0;
-                }
+            match (&l1, &l2) {
+                (Some(n1), Some(n2)) => {
+                    l1 = &n1.next;
+                    num1 = if let Some(node) = l1 { node.val } else { 0 };
 
-                (Some(ListNode { next: None, .. }), Some(ListNode { next: Some(n2), .. })) => {
-                    num1 = 0;
-                    num2 = n2.val;
-                }
-                (Some(ListNode { next: None, .. }), Some(ListNode { next: None, .. })) => {
-                    num1 = 0;
-                    num2 = n2.val;
+                    l2 = &n2.next;
+                    num2 = if let Some(node) = l2 { node.val } else { 0 };
+
+                    if l1.is_none() && l2.is_none() && carry == 0 {
+                        break;
+                    }
                 }
                 (Some(n1), None) => {
                     l1 = &n1.next;
                     num1 = if let Some(node) = l1 { node.val } else { 0 };
 
                     num2 = 0;
+
+                    if l1.is_none() && carry == 0 {
+                        break;
+                    }
                 }
                 (None, Some(n2)) => {
                     num1 = 0;
 
                     l2 = &n2.next;
                     num2 = if let Some(node) = l2 { node.val } else { 0 };
+
+                    if l2.is_none() && carry == 0 {
+                        break;
+                    }
+                }
+                (None, None) => {
+                    break;
+                }
+            }
+
+            sum = num1 + num2 + carry;
+            carry = sum / 10;
+
+            // the result tail is always Some
+            result_tail.as_mut().unwrap().next = Some(Box::from(ListNode::new(sum % 10)));
+            result_tail = &mut result_tail.as_mut().unwrap().next;
+        }
+
+        result_head
+    }
+    /// a giant match is much worse
+    /// 6 ms and 2.26 MB
+    pub fn add_two_numbers3(
+        l1: Option<Box<ListNode>>,
+        l2: Option<Box<ListNode>>,
+    ) -> Option<Box<ListNode>> {
+        // get mut references to the lists
+        let mut l1 = &l1;
+        let mut l2 = &l2;
+
+        // there is at least one node in each of these lists
+        let mut num1 = l1.as_ref().unwrap().val;
+        let mut num2 = l2.as_ref().unwrap().val;
+
+        let mut sum = num1 + num2;
+        let mut carry = sum / 10;
+
+        // start the result list
+        let mut result_head = Some(Box::from(ListNode::new(sum % 10)));
+        let mut result_tail = &mut result_head;
+
+        loop {
+            // advance the lists conditionally
+            match (l1.as_deref(), l2.as_deref()) {
+                // both are nodes and have next nodes
+                (Some(ListNode { next: Some(n1), .. }), Some(ListNode { next: Some(n2), .. })) => {
+                    l1 = &l1.as_ref().unwrap().next;
+                    l2 = &l2.as_ref().unwrap().next;
+                    num1 = n1.val;
+                    num2 = n2.val;
+                }
+                // both are nodes but l2 is the last one
+                (Some(ListNode { next: Some(n1), .. }), Some(ListNode { next: None, .. })) => {
+                    l1 = &l1.as_ref().unwrap().next;
+                    l2 = &None;
+                    num1 = n1.val;
+                    num2 = 0;
+                }
+                // both are nodes but l1 is the last one
+                (Some(ListNode { next: None, .. }), Some(ListNode { next: Some(n2), .. })) => {
+                    l1 = &None;
+                    l2 = &l2.as_ref().unwrap().next;
+                    num1 = 0;
+                    num2 = n2.val;
+                }
+                // both are nodes, but both are the last ones
+                (Some(ListNode { next: None, .. }), Some(ListNode { next: None, .. })) => {
+                    l1 = &None;
+                    l2 = &None;
+                    num1 = 0;
+                    num2 = 0;
+                }
+                // l1 is a node with a next, l2 is done
+                (Some(ListNode { next: Some(n1), .. }), None) => {
+                    l1 = &l1.as_ref().unwrap().next;
+                    num1 = n1.val;
+                }
+                (Some(ListNode { next: None, .. }), None) => {
+                    l1 = &None;
+                    num1 = 0;
+                }
+                (None, Some(ListNode { next: Some(n2), .. })) => {
+                    l2 = &l2.as_ref().unwrap().next;
+                    num2 = n2.val;
+                }
+                (None, Some(ListNode { next: None, .. })) => {
+                    l2 = &None;
+                    num2 = 0;
                 }
                 (None, None) => {
                     break;
